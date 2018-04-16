@@ -28,7 +28,8 @@ public class MToonInspector : ShaderGUI
     {
         Opaque,
         Cutout,
-        Transparent
+        Transparent,
+        Mixed
     }
 
     private MaterialProperty _blendMode;
@@ -156,7 +157,7 @@ public class MToonInspector : ShaderGUI
                 {
                     EditorGUILayout.LabelField("Alpha", EditorStyles.boldLabel);
                     {
-                        if (bm == RenderMode.Transparent)
+                        if (bm == RenderMode.Transparent || bm == RenderMode.Mixed)
                             EditorGUILayout.TextField("Ensure your lit color and texture have alpha channels.");
 
                         if (bm == RenderMode.Cutout)
@@ -400,6 +401,16 @@ public class MToonInspector : ShaderGUI
                 SetKeyword(material, "_ALPHABLEND_ON", true);
                 SetKeyword(material, "_ALPHAPREMULTIPLY_ON", false);
                 material.renderQueue = (int) RenderQueue.Transparent;
+                break;
+            case RenderMode.Mixed:
+                material.SetOverrideTag("RenderType", "Opaque");
+                material.SetInt("_SrcBlend", (int) BlendMode.SrcAlpha);
+                material.SetInt("_DstBlend", (int) BlendMode.OneMinusSrcAlpha);
+                material.SetInt("_ZWrite", 1);
+                SetKeyword(material, "_ALPHATEST_ON", false);
+                SetKeyword(material, "_ALPHABLEND_ON", true);
+                SetKeyword(material, "_ALPHAPREMULTIPLY_ON", false);
+                material.renderQueue = (int) RenderQueue.Geometry + 100;
                 break;
         }
     }
